@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+HOOK_DIR="$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)"
+WORKSPACE_ROOT="$(CDPATH= cd -- "$HOOK_DIR/.." && pwd)"
+exec "$WORKSPACE_ROOT/ops/check-commits.sh" --message-file "$1"

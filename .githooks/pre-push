@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+HOOK_DIR="$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)"
+WORKSPACE_ROOT="$(CDPATH= cd -- "$HOOK_DIR/.." && pwd)"
+CHECK_COMMITS="$WORKSPACE_ROOT/ops/check-commits.sh"
+REMOTE_NAME="$1"
+ZERO=0000000000000000000000000000000000000000
+
+while read -r local_ref local_sha remote_ref remote_sha; do
+  [ -n "${local_ref:-}" ] || continue
+  case "$remote_ref" in
+    refs/heads/main|refs/heads/master|refs/heads/dev)
+      printf 'ERROR: direct push to protected integration branch is blocked: %s\n' "$remote_ref" >&2
+      printf 'Push a short-lived branch and use a pull request.\n' >&2
+      exit 1 ;;
+  esac
+  [ "$local_sha" != "$ZERO" ] || continue
+  if [ "$remote_sha" = "$ZERO" ]; then
+    commits="$(git rev-list "$local_sha" --not --remotes="$REMOTE_NAME")"
+  else
+    commits="$(git rev-list "$remote_sha..$local_sha")"
+  fi
+  for commit in $commits; do
+    "$CHECK_COMMITS" --message "$(git show -s --format='%B' "$commit")" >/dev/null
+  done
+done
+
+printf 'Pre-push Git checks passed. Remote dev validation remains required before merge.\n'

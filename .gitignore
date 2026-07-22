@@ -1,0 +1,14 @@
+/self-checkout-admin/
+/self-checkout-backend/
+/self-checkout-client/
+/self-checkout-infra/
+/self-checkout-ml/
+/.DS_Store
+/.claude/
+/.ruff_cache/
+/CLAUDE.md
+*.local
+*.log
+.env
+.env.*
+!.env.example

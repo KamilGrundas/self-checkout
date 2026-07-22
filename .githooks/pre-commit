@@ -1,0 +1,35 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+git diff --cached --check
+
+if [ -n "$(git diff --cached --name-only --diff-filter=U)" ]; then
+  printf 'ERROR: staged index contains unresolved merge conflicts\n' >&2
+  exit 1
+fi
+
+if git diff --cached --no-ext-diff --unified=0 | grep -Eq '^\+.*(<<<<<<< |=======|>>>>>>> )'; then
+  printf 'ERROR: staged diff contains merge-conflict markers\n' >&2
+  exit 1
+fi
+
+if git diff --cached --name-only --diff-filter=ACM | grep -E '(^|/)\.env($|\.)' | grep -Ev '(^|/)\.env\.example$' >/dev/null 2>&1; then
+  printf 'ERROR: refusing to commit an environment file; use a sanitized .env.example\n' >&2
+  exit 1
+fi
+
+if git diff --cached --no-ext-diff --unified=0 | grep -Eiq '^\+.*(-----BEGIN (RSA |EC |OPENSSH )?PRIVATE KEY-----|gh[pousr]_[A-Za-z0-9_]{20,}|AKIA[0-9A-Z]{16})'; then
+  printf 'ERROR: potential secret detected in staged content; inspect it without printing the value\n' >&2
+  exit 1
+fi
+
+paths_file="$(mktemp -t self-checkout-staged.XXXXXX)"
+trap 'rm -f "$paths_file"' EXIT HUP INT TERM
+git diff --cached --name-only --diff-filter=ACM -z > "$paths_file"
+while IFS= read -r -d '' path; do
+  size="$(git cat-file -s ":$path" 2>/dev/null || printf '0')"
+  if [ "$size" -gt 5242880 ]; then
+    printf 'ERROR: staged file exceeds 5 MiB: %s (%s bytes)\n' "$path" "$size" >&2
+    exit 1
+  fi
+done < "$paths_file"
