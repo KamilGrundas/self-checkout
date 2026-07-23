@@ -11,7 +11,7 @@ Bootstrap safe repository-local Git defaults and shared hooks with:
 
 The bootstrap never changes global Git configuration, author identity, signing, credentials, or proxy settings. It preserves effective values already configured by the user. It intentionally avoids `fetch.pruneTags` because published tags are immutable and avoids `rebase.autoStash` because workspace automation must not stash user changes.
 
-Create new work with `ops/start-task.sh`. The script fetches selected remotes, refuses dirty or in-progress repositories, resolves the temporary base from `repos.yaml`, preflights every selected repository, and creates the same logical branch independently. Use `--dry-run` to preview. It never touches unselected repositories.
+Create new work with `ops/start-task.sh`. The script fetches selected remotes, refuses dirty or in-progress repositories, resolves `main` as the configured base from `repos.yaml`, preflights every selected repository, and creates the same logical branch independently. Use `--dry-run` to preview. It never touches unselected repositories.
 
 Use `ops/check-commits.sh --message 'fix(client): prevent duplicate payment'` or `--repo <key> --range <range>` to validate Conventional Commits. `ops/finish-task.sh --repos <keys>` runs remote dev validation, reviews diffs and untracked files, validates new commit messages, suggests commit groups, and prints PR summary skeletons. Its `--dry-run` mode skips remote validation but still performs local review.
 

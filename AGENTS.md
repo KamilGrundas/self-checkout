@@ -29,7 +29,7 @@ When asked to implement a feature or fix:
 1. Inspect workspace and repository status with `ops/repos-status.sh`.
 2. Identify affected repositories and read their `AGENTS.md` files.
 3. Fetch remotes with pruning when network access is available.
-4. Create matching short-lived branches with `ops/start-task.sh`; never implement directly on `main`, `master`, or `dev`.
+4. Create matching short-lived branches from `main` with `ops/start-task.sh`; never implement directly on `main` or `master`.
 5. Implement focused changes and preserve all pre-existing user changes.
 6. Sync and validate on dev with `ops/dev-sync.sh` and `ops/dev-test.sh`.
 7. Review every repository diff, untracked file, and possible secret.
@@ -40,6 +40,6 @@ When asked to implement a feature or fix:
 
 Use branch names `feat/…`, `fix/…`, `refactor/…`, `chore/…`, `docs/…`, `test/…`, `ci/…`, `security/…`, or `hotfix/…`. Commit messages must use the English Conventional Commit form `<type>(<scope>): <imperative description>`. Use `ops/check-commits.sh` before committing and `ops/finish-task.sh` before requesting a push.
 
-The configured `workflow_base_branch` in `repos.yaml` is authoritative. It is temporarily `dev` while the existing development history is migrated to `main`; do not infer that similarly named branches across repositories share commits or lifecycle. See `docs/git-workflow.md`.
+The configured `workflow_base_branch` in `repos.yaml` is authoritative and is `main` for every application repository. All work enters `main` through short-lived branches and pull requests; do not infer that similarly named branches across repositories share commits or lifecycle. See `docs/git-workflow.md`.
 
 If a working tree is dirty, show the changed and untracked files, determine which belong to the task, and preserve them. Never use `git reset --hard`, `git clean -fd`, automatic stash, force-push, or history rewriting. Stage precise paths or patches instead of broad `git add .` or `git add -A` when unrelated changes exist.

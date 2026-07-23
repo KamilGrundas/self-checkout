@@ -15,43 +15,33 @@ repositories:
     path: self-checkout-admin
     provider: github
     remote: git@github.com:KamilGrundas/self-checkout-admin.git
-    current_branch_at_inventory: chore/workspace-control
     default_branch: main
-    workflow_base_branch: dev
-    dev_branch_status: temporary_integration
+    workflow_base_branch: main
   backend:
     name: self-checkout-backend
     path: self-checkout-backend
     provider: github
     remote: git@github.com:KamilGrundas/self-checkout-backend.git
-    current_branch_at_inventory: chore/workspace-control
     default_branch: main
-    workflow_base_branch: dev
-    dev_branch_status: temporary_integration
+    workflow_base_branch: main
   client:
     name: self-checkout-client
     path: self-checkout-client
     provider: github
     remote: git@github.com:KamilGrundas/self-checkout-client.git
-    current_branch_at_inventory: chore/workspace-control
     default_branch: main
-    workflow_base_branch: dev
-    dev_branch_status: temporary_integration
+    workflow_base_branch: main
   infra:
     name: self-checkout-infra
     path: self-checkout-infra
     provider: github
     remote: git@github.com:KamilGrundas/self-checkout-infra.git
-    current_branch_at_inventory: chore/workspace-control
     default_branch: main
-    workflow_base_branch: dev
-    dev_branch_status: temporary_integration
+    workflow_base_branch: main
   ml:
     name: self-checkout-ml
     path: self-checkout-ml
     provider: github
     remote: git@github.com:KamilGrundas/self-checkout-ml.git
-    current_branch_at_inventory: chore/workspace-control
     default_branch: main
-    workflow_base_branch: dev
-    dev_branch_status: temporary_integration
+    workflow_base_branch: main
