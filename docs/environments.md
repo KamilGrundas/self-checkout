@@ -23,6 +23,9 @@ Canonical database settings are `DATABASE_URL`, `DB_CONNECT_TIMEOUT`,
 `BACKEND_PUBLIC_URL` for browser-accessible product images. ML adds
 `S3_SHELF_BUCKET`, `S3_SCALE_BUCKET`, `S3_EXTERNAL_BUCKET`,
 `S3_TRAINING_BUCKET`, and `S3_LABEL_STUDIO_EXPORT_BUCKET`.
+The admin image compiles browser-accessible `VITE_API_URL` and
+`VITE_ML_API_URL`; Compose-only service names must not be used for a LAN-facing
+build.
 
 MLflow separates `MLFLOW_TRACKING_URI`, `MLFLOW_BACKEND_STORE_URI`, and
 `MLFLOW_ARTIFACT_ROOT`. Tracking is optional for API health and storage-only ML
