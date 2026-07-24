@@ -42,6 +42,13 @@ by dev configuration. The safe supported minimum requires both relationships to
 be declared; installations with a different backend need an explicit reviewed
 procedure before refresh.
 
+The current S3 refresh preserves object keys and bodies and verifies a content
+sample without relying on ETag. It does not reproduce bucket policies, ACLs,
+versions, or arbitrary provider metadata; those are infrastructure state, not
+application data. If a future application contract makes custom object metadata
+authoritative, extend and contract-test the refresh before using it for that
+bucket.
+
 Production PostgreSQL dumps live only in a mode-700 temporary run directory and
 are removed on exit. Requested dev snapshots, secret-free operation logs, and
 S3 manifests are retained in protected `refresh-snapshots`, `refresh-logs`, and
