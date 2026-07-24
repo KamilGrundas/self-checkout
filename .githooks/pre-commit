@@ -13,7 +13,7 @@ if git diff --cached --no-ext-diff --unified=0 | grep -Eq '^\+.*(<<<<<<< |======
   exit 1
 fi
 
-if git diff --cached --name-only --diff-filter=ACM | grep -E '(^|/)\.env($|\.)' | grep -Ev '(^|/)\.env\.example$' >/dev/null 2>&1; then
+if git diff --cached --name-only --diff-filter=ACM | grep -E '(^|/)\.env($|\.)' | grep -Ev '(^|/)\.env(\.[^/]+)?\.example$' >/dev/null 2>&1; then
   printf 'ERROR: refusing to commit an environment file; use a sanitized .env.example\n' >&2
   exit 1
 fi

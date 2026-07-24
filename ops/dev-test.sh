@@ -5,11 +5,10 @@ SCRIPT_DIR="$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)"
 . "$SCRIPT_DIR/lib/common.sh"
 
 usage() {
-  printf 'Usage: ops/dev-test.sh [--repo NAME]... [--ml-dev]\n'
+  printf 'Usage: ops/dev-test.sh [--repo NAME]...\n'
 }
 
 selected=''
-ml_dev=false
 while [ "$#" -gt 0 ]; do
   case "$1" in
     --repo)
@@ -17,7 +16,6 @@ while [ "$#" -gt 0 ]; do
       [ "$#" -gt 0 ] || die '--repo requires a repository key'
       selected="${selected}${selected:+ }$1"
       ;;
-    --ml-dev) ml_dev=true ;;
     -h|--help) usage; exit 0 ;;
     *) die "Unknown argument: $1" ;;
   esac
@@ -47,15 +45,10 @@ dev_root="$(configured_dev_root)"
 validate_remote_root "$dev_root"
 infra="$dev_root/self-checkout-infra"
 
-if [ "$ml_dev" = true ]; then
-  compose_files='-f compose.yml -f compose.override.yml -f compose.mlflow.yml'
-  up_script='./scripts/up-ml-dev.sh'
-else
-  compose_files='-f compose.yml -f compose.override.yml'
-  up_script='./scripts/up.sh'
-fi
+compose_files='-f compose.yml -f compose.override.yml -f compose.s3-contract-test.yml -f compose.mlflow.yml'
+up_script='./scripts/up-validation.sh'
 
-ssh -o BatchMode=yes dev "set -eu; cd '$infra'; docker compose $compose_files config --quiet; $up_script; docker compose $compose_files ps"
+ssh -o BatchMode=yes dev "set -eu; cd '$infra'; ./scripts/repair-dev-env.sh; export S3_ENDPOINT_URL=http://s3-contract-test:4566 S3_ACCESS_KEY_ID=contract-test S3_SECRET_ACCESS_KEY=contract-test S3_USE_SSL=false S3_FORCE_PATH_STYLE=true S3_VERIFY_TLS=true; docker compose $compose_files config --quiet; $up_script; docker compose $compose_files ps"
 
 # Repository-specific validation is delegated to the infra-owned controlled runner.
 ssh -o BatchMode=yes dev "set -eu; cd '$infra'; test -x ./scripts/validate-dev.sh; ./scripts/validate-dev.sh $selected"

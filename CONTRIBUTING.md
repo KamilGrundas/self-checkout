@@ -23,6 +23,20 @@ Commits use English Conventional Commits:
 
 Keep implementation and its essential tests together. Separate unrelated tooling, documentation, infrastructure, migrations, or refactoring when that improves reversibility. Stage exact files or patches and inspect `git diff --cached` before every commit.
 
+## Pre-1.0 changes
+
+Until the first intentional production release, compatibility with earlier
+unreleased development versions is not required. Breaking API, data-schema,
+configuration, service-contract, technology, and project-structure changes are
+allowed when they produce a coherent current system. Do not preserve obsolete
+behavior solely for an unreleased client or service.
+
+Every affected component must change together, documentation and tests must
+describe the new contract, and the integrated current stack must pass on dev.
+Development data may be recreated. Production data may not be changed during
+validation. Before 1.0 this policy will be replaced by explicit API stability,
+versioning, compatibility, migration, and supported-upgrade rules.
+
 ## Pull requests
 
 Create a separate PR for every repository. Record dependent PRs, validation evidence, rollback, and merge/deployment order. The preferred merge method is squash merge with a valid Conventional Commit title.

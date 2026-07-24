@@ -2,8 +2,8 @@ workspace:
   name: self-checkout
   path: .
   provider: null
-  default_branch: null
-  workflow_base_branch: null
+  default_branch: main
+  workflow_base_branch: main
   dev_ssh_alias: dev
   prod_ssh_alias: prod
   # Dedicated sibling-repository workspace verified through ops/context.sh.

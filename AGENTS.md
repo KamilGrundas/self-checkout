@@ -43,3 +43,50 @@ Use branch names `feat/…`, `fix/…`, `refactor/…`, `chore/…`, `docs/…`,
 The configured `workflow_base_branch` in `repos.yaml` is authoritative and is `main` for every application repository. All work enters `main` through short-lived branches and pull requests; do not infer that similarly named branches across repositories share commits or lifecycle. See `docs/git-workflow.md`.
 
 If a working tree is dirty, show the changed and untracked files, determine which belong to the task, and preserve them. Never use `git reset --hard`, `git clean -fd`, automatic stash, force-push, or history rewriting. Stage precise paths or patches instead of broad `git add .` or `git add -A` when unrelated changes exist.
+
+## Pre-1.0 architecture policy
+
+The project is in pre-1.0 development. Backward compatibility with earlier
+unreleased development versions is not required. Prefer a coherent, modern
+implementation across all current components over compatibility with obsolete
+internal versions.
+
+Breaking API, configuration, schema, and infrastructure changes are allowed
+when they improve the current architecture. They must be coordinated across
+affected repositories, documented, and fully validated on dev. Incorrect or
+unused interfaces may be removed, technologies may be replaced, and
+development environments may be rebuilt instead of supporting every historic
+development migration path.
+
+All current components must work together. Compatibility between the current
+version of one component and an older unreleased version of another component
+is not required. Tests and documentation describe the current system, and the
+pre-1.0 policy never excuses untested changes. Before the first intentional
+production release, replace this policy with explicit API stability,
+compatibility, versioning, data-migration, and supported-upgrade rules.
+
+Production data must never be modified as part of development validation.
+
+Application code must depend only on a generic S3-compatible object-storage
+contract. Do not introduce vendor-specific object-storage names, SDK
+assumptions, configuration variables, or infrastructure requirements.
+
+No permanent S3 provider is selected yet. Provider choice must remain an
+infrastructure configuration decision that does not require application-code
+changes.
+
+Stateful production services are external dependencies. Production application
+containers connect to external PostgreSQL, S3-compatible object storage, and
+optional MLflow through configuration.
+
+Development runs application services and required development infrastructure
+through Docker Compose. S3 connectivity must support an external endpoint and
+a replaceable provider overlay without coupling the application to a product.
+
+Data refresh is strictly one-way from production to development. Never create,
+suggest, or execute a dev-to-prod data synchronization workflow.
+
+Application data may be copied from production to development without
+anonymization. Do not copy infrastructure credentials, secrets, private keys,
+environment files, or production system configuration as part of a data
+refresh.

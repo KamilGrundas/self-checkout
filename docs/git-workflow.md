@@ -113,3 +113,14 @@ Before release:
 - [ ] Images are identified by digest and optional release tag.
 - [ ] Release notes list component versions and known limitations.
 - [ ] Production deployment has separate explicit approval.
+
+## Pre-1.0 compatibility and Definition of Done
+
+Earlier unreleased versions are not supported upgrade or interoperability
+targets. Current backend, ML, admin, client, and infra contracts must be changed
+together where affected. A breaking change is done only when current tests,
+documentation, environment examples, migrations, Compose resolution, image
+builds, integration checks, and dev health checks pass, secrets are absent, and
+rollback plus merge order are recorded. Before the first production release,
+define stable API/versioning rules and supported data-migration and upgrade
+paths.

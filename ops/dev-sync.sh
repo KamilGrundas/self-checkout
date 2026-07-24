@@ -53,6 +53,7 @@ rsync_args=(-az --itemize-changes)
 [ "$delete_safe" = true ] && rsync_args+=(--delete-delay)
 rsync_args+=(
   --include='.env.example'
+  --include='.env.*.example'
   --exclude='.git/' --exclude='.env' --exclude='.env.*'
   --exclude='.ssh/' --exclude='*.pem' --exclude='*.key' --exclude='id_rsa*' --exclude='id_ed25519*'
   --exclude='.self-checkout-client-id'
