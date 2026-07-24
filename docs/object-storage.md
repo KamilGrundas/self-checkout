@@ -19,5 +19,8 @@ the application contract.
 
 Bucket creation is allowed only for local development with
 `S3_CREATE_BUCKETS=true`. Production buckets, policies, identities, encryption,
-and lifecycle rules are provisioned externally. Public object delivery, when
-needed, uses `S3_PUBLIC_BASE_URL`; the application does not make buckets public.
+and lifecycle rules are provisioned externally. Product images are delivered
+through the backend URL configured by `BACKEND_PUBLIC_URL`, so browsers do not
+need access to an internal S3 endpoint. ML may use `S3_PUBLIC_BASE_URL` where it
+needs to publish provider-neutral object URLs. The applications do not make
+buckets public.

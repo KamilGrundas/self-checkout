@@ -7,7 +7,7 @@ SCRIPT_DIR="$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)"
 [ "$#" -ge 1 ] && [ "$#" -le 2 ] || die 'Usage: ops/dev-logs.sh SERVICE [TAIL]'
 service="$1"
 tail_lines="${2:-200}"
-case "$service" in admin|backend|db|ml|prestart|s3-contract-test) ;; *) die "Unsupported service: $service" ;; esac
+case "$service" in admin|backend|db|label-studio|mailcatcher|ml|mlflow|prestart|s3-contract-test) ;; *) die "Unsupported service: $service" ;; esac
 case "$tail_lines" in ''|*[!0-9]*) die 'TAIL must be numeric' ;; esac
 
 verify_remote_environment dev dev
