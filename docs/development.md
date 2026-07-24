@@ -30,3 +30,9 @@ For a new isolated dev workspace, `./ops/dev-init.sh` creates the required remot
 The optional `--delete-safe` flag uses delayed deletion only inside validated per-repository targets. It is never enabled by default. Git metadata, env files, credentials, caches, build outputs, dependencies, test reports, and infra data are excluded.
 
 Use `ops/dev-test.sh --repo <key>` for affected repositories. It synchronizes all required Compose build contexts, verifies the dev marker, delegates repository validation to the controlled infra runner, and checks Compose service status. Do not run local Docker commands.
+
+The validation runner attaches the isolated S3 contract-test overlay, exercises
+custom endpoint/path-style CRUD, and then removes no external state. Normal dev
+startup instead uses the configured external endpoint or an explicitly selected
+provider overlay. See `environments.md`, `object-storage.md`, and
+`data-refresh.md`.
