@@ -20,6 +20,16 @@ Docker is not installed locally and must never be invoked on the MacBook. Run Do
 
 Compose files are `self-checkout-infra/compose.yml`, `compose.override.yml`, and optionally `compose.mlflow.yml`. Preserve their sibling build-context layout. Never install Codex on dev or prod.
 
+After syncing or validating changes on `dev`, always rebuild and recreate the
+affected services with the latest synchronized sources before handing the task
+back. A successful `ops/dev-test.sh` run is not proof that its final containers
+use the normal development configuration: validation overlays are temporary
+and must not be left as the active runtime. Re-run the appropriate controlled
+startup script owned by `self-checkout-infra`, wait for every required service
+to become healthy, and verify the browser-accessible application and API
+endpoints. Synchronizing files without restarting the affected services is
+incomplete.
+
 Production accepts only an approved, immutable tag, digest, or release. Never rsync/scp local source to prod, improvise commands on prod, deploy uncommitted changes, run migrations without an approved deployment procedure, or merge automatically. Production access is limited to controlled status/log/health/deploy/rollback operations owned by the infra repository.
 
 ## Standard workflow
@@ -32,11 +42,14 @@ When asked to implement a feature or fix:
 4. Create matching short-lived branches from `main` with `ops/start-task.sh`; never implement directly on `main` or `master`.
 5. Implement focused changes and preserve all pre-existing user changes.
 6. Sync and validate on dev with `ops/dev-sync.sh` and `ops/dev-test.sh`.
-7. Review every repository diff, untracked file, and possible secret.
-8. Create separate, atomic Conventional Commits in each repository.
-9. Prepare a separate PR summary and merge/deployment order for each repository.
-10. Stop before push unless the user explicitly instructs otherwise.
-11. Never merge, publish a release, or deploy to prod without explicit approval.
+7. Restore the normal dev runtime from the latest synchronized sources, wait
+   for health checks, and verify browser-facing connectivity; never leave
+   `compose.validation.yml` active after validation.
+8. Review every repository diff, untracked file, and possible secret.
+9. Create separate, atomic Conventional Commits in each repository.
+10. Prepare a separate PR summary and merge/deployment order for each repository.
+11. Stop before push unless the user explicitly instructs otherwise.
+12. Never merge, publish a release, or deploy to prod without explicit approval.
 
 Use branch names `feat/…`, `fix/…`, `refactor/…`, `chore/…`, `docs/…`, `test/…`, `ci/…`, `security/…`, or `hotfix/…`. Commit messages must use the English Conventional Commit form `<type>(<scope>): <imperative description>`. Use `ops/check-commits.sh` before committing and `ops/finish-task.sh` before requesting a push.
 
