@@ -31,6 +31,20 @@ The optional `--delete-safe` flag uses delayed deletion only inside validated pe
 
 Use `ops/dev-test.sh --repo <key>` for affected repositories. It synchronizes all required Compose build contexts, verifies the dev marker, delegates repository validation to the controlled infra runner, and checks Compose service status. Do not run local Docker commands.
 
+Client work also has an optional representative-hardware step on
+`dev-client`. Run local Rust checks first, then use
+`ops/dev-client-check.sh --optional`. When reachable, inspect, dry-run and apply
+the client-only sync, build/restart with `ops/dev-client-deploy.sh`, and verify
+with `ops/dev-client-status.sh`. When unavailable, report the device step as
+skipped and continue. See [dev-client.md](dev-client.md).
+
+When the target is reachable, readiness includes a successful authenticated
+checkout-session connection to the backend on `dev`, not only HTTP health
+checks. Keep a dedicated development checkout-counter record named
+`dev-client` (or the explicit name cached in the target profile), and create or
+rotate it when missing or invalid. After an affected change, the normal `dev`
+runtime and the optional target client must work together before handoff.
+
 Standard dev startup includes admin, backend, ML API, PostgreSQL, MLflow, Label
 Studio, and the development mail catcher. The validation runner also attaches
 the isolated S3 contract-test overlay and exercises custom endpoint/path-style

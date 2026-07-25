@@ -1,5 +1,12 @@
 # Environments and configuration
 
+The project uses three distinct SSH targets. `dev` owns Docker Compose,
+integration services, and browser-facing validation. `prod` accepts only
+approved immutable releases through controlled procedures. `dev-client` is an
+optional, replaceable computer that runs the Rust/Iced client natively against
+development-only APIs; it owns its runtime credentials and graphical startup
+configuration and is never a source or Docker deployment target.
+
 Dev uses `compose.yml` plus `compose.override.yml`. It includes local
 PostgreSQL, application containers, local volumes, migrations, health checks,
 MLflow, Label Studio, the development mail catcher, and either an external S3
@@ -37,3 +44,12 @@ Only local development receives safe endpoint/bucket/database defaults.
 Production validates required external values at Compose interpolation and
 application startup. Examples contain placeholders only; actual secrets come
 from independent environment configuration.
+
+The target client reads `DEFAULT_LANG`, `APP_ENV`, `API_BASE_URL`,
+`ML_API_BASE_URL`, `CHECKOUT_COUNTER_ID`, `CHECKOUT_COUNTER_PASSWORD`, and
+`CLIENT_ID_STORAGE_PATH` from its device-owned `.env` or process environment.
+Synchronization must not overwrite that file. Both API endpoints must resolve
+to services running on `dev`, directly or through a controlled
+development-only route; they must never resolve to `prod` or application
+services hosted by `dev-client`. Validation must fail visibly when no route to
+`dev` exists. See [dev-client.md](dev-client.md).

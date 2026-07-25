@@ -15,6 +15,12 @@ Allowed branch types are `feat`, `fix`, `refactor`, `chore`, `docs`, `test`, `ci
 
 Run Docker, Compose, integration tests, and application health checks only on remote `dev` through the workspace scripts. Use `./ops/finish-task.sh --repos <keys>` for the final review and validation.
 
+For Rust client work, run supported Cargo checks locally. `dev-client` is an
+optional, replaceable native validation target: use the controlled
+`ops/dev-client-*.sh` workflow when reachable and record it as skipped when
+unavailable. Never substitute `dev-client` for Docker/integration checks on
+`dev`, and never synchronize source or runtime configuration to `prod`.
+
 Commits use English Conventional Commits:
 
 ```text

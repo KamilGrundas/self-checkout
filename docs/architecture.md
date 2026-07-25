@@ -23,7 +23,7 @@ are configuration. No permanent S3 provider is selected.
 
 ```mermaid
 flowchart LR
-  C[Client] --> B[Backend]
+  C[Local or optional target client] --> B[Backend on dev]
   A[Admin] --> B
   B --> P[(Compose PostgreSQL)]
   B --> S[S3-compatible endpoint]
@@ -36,6 +36,11 @@ Compose starts application services and local PostgreSQL. MLflow and Label
 Studio are optional overlays. S3 is either an external endpoint or a provider
 attached through a replaceable overlay. Named volumes contain only dev state
 and may be rebuilt.
+
+The optional `dev-client` computer runs the desktop client natively in its
+inspected runtime environment. It consumes development APIs from `dev` but
+does not host Compose services. Local desktop builds remain supported when the
+target is absent.
 
 ## Production
 
