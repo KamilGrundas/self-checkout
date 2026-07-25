@@ -16,9 +16,27 @@ If an affected repository is dirty, show its existing changes before editing it.
 
 ## Runtime rules
 
-Docker is not installed locally and must never be invoked on the MacBook. Run Docker, Docker Compose, integration tests, application startup, and health checks only on the host reached through `ssh dev`, using scripts under `ops/` and controlled scripts owned by `self-checkout-infra`.
+The three SSH targets have separate responsibilities:
 
-Compose files are `self-checkout-infra/compose.yml`, `compose.override.yml`, and optionally `compose.mlflow.yml`. Preserve their sibling build-context layout. Never install Codex on dev or prod.
+- `ssh dev` is the main development server. Docker, Docker Compose, integration
+  tests, development services, health checks, backend services, and
+  browser-facing application validation run only there through scripts under
+  `ops/` and controlled scripts owned by `self-checkout-infra`.
+- `ssh prod` is production. Its existing immutable-release, controlled
+  status/deploy/rollback, and source-synchronization restrictions remain in
+  force.
+- `ssh dev-client` is an optional, replaceable target computer for direct
+  Rust/Iced client testing. It is not a Docker or general integration host. Check it
+  non-interactively with a bounded timeout before every synchronization or
+  validation operation. Its unavailability skips only device work and never
+  blocks local client implementation or validation.
+
+Docker is not installed locally and must never be invoked on the MacBook.
+Never install Codex on `dev`, `prod`, or `dev-client`. Do not introduce Docker
+on `dev-client` unless read-only inspection proves that the established client
+workflow intentionally uses it there.
+
+Compose files are `self-checkout-infra/compose.yml`, `compose.override.yml`, and optionally `compose.mlflow.yml`. Preserve their sibling build-context layout.
 
 After syncing or validating changes on `dev`, always rebuild and recreate the
 affected services with the latest synchronized sources before handing the task
@@ -31,6 +49,14 @@ endpoints. Synchronizing files without restarting the affected services is
 incomplete.
 
 Production accepts only an approved, immutable tag, digest, or release. Never rsync/scp local source to prod, improvise commands on prod, deploy uncommitted changes, run migrations without an approved deployment procedure, or merge automatically. Production access is limited to controlled status/log/health/deploy/rollback operations owned by the infra repository.
+
+Local uncommitted `self-checkout-client` sources may be synchronized to
+`dev-client` for testing. Synchronize only client build inputs and explicitly
+required non-secret runtime configuration. Preserve `.env`, device identity,
+persisted settings, credentials, device startup files, and unmanaged
+configuration unless the task explicitly requires a reviewed change. Device
+synchronization never authorizes a commit, push, pull request, merge, release,
+or production deployment.
 
 ## Standard workflow
 
@@ -54,6 +80,80 @@ When asked to implement a feature or fix:
 12. When commits or pull requests are requested, prepare a separate PR summary
     and merge/deployment order for each repository.
 13. Never merge, publish a release, or deploy to prod without explicit approval.
+
+## Client target-device workflow
+
+For changes affecting `self-checkout-client`:
+
+1. Inspect workspace and repository state, read the root and client
+   `AGENTS.md` files, and preserve existing changes.
+2. Implement locally and run supported local `cargo fmt --check`,
+   `cargo clippy --all-targets --all-features -- -D warnings`, `cargo check`,
+   and `cargo test` checks. A lack of device access must not block this work.
+3. Check `dev-client` using `ops/dev-client-check.sh --optional`, which uses
+   batch-mode SSH and a bounded connection timeout.
+4. If unavailable, report device synchronization, build, restart, and
+   validation as `SKIPPED` and continue with local validation.
+5. If reachable, read the cached target profile with
+   `ops/dev-client-inspect.sh`. If the profile is absent, stale, or inconsistent
+   with live identity checks, perform read-only discovery once and replace it
+   with `ops/dev-client-inspect.sh --refresh`. The device-owned profile records
+   non-secret OS, architecture, toolchain, packages, paths, permissions,
+   graphical/runtime environment, startup mechanism, logs, and endpoint facts
+   so ordinary tasks do not rescan unchanged target details.
+6. Dry-run and apply `ops/dev-client-sync.sh`. It may synchronize uncommitted
+   client build inputs, but it must exclude Git metadata, targets, caches,
+   `.env` files, secrets, device identity, persisted settings, and unrelated
+   repositories.
+7. Use `ops/dev-client-deploy.sh` to build the latest synchronized sources on
+   the target, retain the prior binary for simple rollback, restart through the
+   inspected existing startup mechanism, and verify the running executable
+   hash against both the build and source metadata. Do not merely copy files
+   while leaving an old binary running.
+8. Use `ops/dev-client-status.sh` to check the process, immediate stability,
+   observable logs/output targets, graphical-session variables, deployment
+   metadata, development API connectivity, and checkout-counter
+   authentication. Once the host is reachable,
+   synchronization, build, authentication, configuration, restart, or runtime
+   failures are real failures and must not be hidden by optional-host handling.
+9. Review all local diffs and device-side changes, and leave repository changes
+   uncommitted unless commits are explicitly requested.
+
+Do not assume a graphical session, display protocol, username, home directory,
+source path, service manager, or launch mechanism. Reuse what inspection finds;
+do not create a new service when the existing mechanism is suitable. Package
+changes must be minimal, directly related to the client, and documented. Do not
+run broad upgrades or use `sudo` unless the established build/install workflow
+requires it. Destructive device reconfiguration needs explicit approval.
+
+Remote checks can prove process state, logs/output routing, hashes, exit status,
+session prerequisites, and API connectivity. They cannot prove physical
+display, touch, camera, scale, or complete kiosk behavior; record the remaining
+visual/hardware confirmation for the user at the target computer.
+
+`dev-client` must always use development services hosted by `dev`.
+`API_BASE_URL` and `ML_API_BASE_URL` on the target must resolve, directly or
+through a controlled development-only route, to the backend and ML API running
+on `dev`. Never use loopback services on `dev-client`, the control computer as
+an application backend, or any production endpoint. Treat failed connectivity
+to `dev` as a real target validation failure.
+
+The backend on `dev` and a reachable `dev-client` must be configured together.
+Before target validation, verify that the development backend contains a
+dedicated checkout-counter authorization for the target (use the stable name
+`dev-client` unless the device profile records another explicit name) and that
+the matching ID and password are present only in the device-owned runtime
+configuration. If the authorization is absent or the credentials no longer
+work, create or rotate that development-only authorization and update the
+device atomically with `ops/dev-client-authorize.sh`. Never put credentials in
+the target profile, documentation, command output, or repository files.
+
+After every change that affects the running system, restore and validate the
+normal environment on `dev`. For client-affecting changes, also synchronize,
+rebuild, restart, and validate the client against those same `dev` services
+when `dev-client` is reachable. The task is complete only when the affected
+parts work together on `dev` and, when available, `dev-client`; if the optional
+host is unavailable, record only that target portion as skipped.
 
 Use branch names `feat/…`, `fix/…`, `refactor/…`, `chore/…`, `docs/…`, `test/…`, `ci/…`, `security/…`, or `hotfix/…`. Commit messages must use the English Conventional Commit form `<type>(<scope>): <imperative description>`. Use `ops/check-commits.sh` before committing and `ops/finish-task.sh` before requesting a push.
 

@@ -4,7 +4,10 @@
 
 Migration decision: 2026-07-23. All five application repositories use `main` as the remote default and the only long-lived integration branch. Repository CI runs for pull requests and pushes targeting `main`. The legacy `dev` Git branches are not valid bases for new work and may be deleted after their migration pull requests are merged and their tips are confirmed reachable from `main`.
 
-The SSH alias and host named `dev` remain the controlled development environment. References to syncing, testing, Docker, or health checks on `dev` refer to that host, not to a Git branch.
+The SSH alias and host named `dev` remain the controlled Docker/integration
+development environment. The separate `dev-client` alias is an optional
+target computer for native client testing, not a Git branch and not a replacement
+for `dev`. References to `prod` retain all production restrictions.
 
 Remote branch protection and repository rulesets must be verified in GitHub settings. The admin repository tracks `.env`; do not expose it. Removing it from tracking, reviewing history, and rotating any real credentials is a separate security task.
 
@@ -88,6 +91,9 @@ Before implementation:
 Before push:
 
 - [ ] Sync with a dry-run followed by apply to the development host.
+- [ ] For client changes, check optional `dev-client`; deploy, authenticate
+      against the backend on `dev`, and verify there when reachable or record
+      the device step as skipped.
 - [ ] Run repository lint, tests, type checks, and builds.
 - [ ] Validate Compose and integration health.
 - [ ] Review full and staged diffs plus untracked files.
