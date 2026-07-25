@@ -62,6 +62,42 @@ them from a request to implement, fix, validate, or deploy changes to `dev`.
 Only create commits or pull requests when the current user prompt explicitly
 asks for them.
 
+## Pull request creation
+
+Create or update a pull request only when the current user prompt explicitly
+requests a pull request. A request to implement, validate, commit, push, or
+deploy does not authorize pull-request creation. Creating a pull request never
+authorizes merging it.
+
+Before creating a pull request:
+
+1. Confirm the affected repository is on its task branch and has no unrelated
+   changes.
+2. Run `ops/check-commits.sh` before committing and `ops/finish-task.sh` before
+   pushing.
+3. Push the exact task branch and set its upstream without force-pushing.
+4. Prepare a repository-specific title and body containing a summary, exact
+   validation performed, dependencies, rollback guidance, and merge/deployment
+   order.
+5. Check whether an open pull request already exists for the same repository
+   and head branch; update that pull request instead of creating a duplicate.
+
+Use `gh pr create` or `gh pr edit` when the authenticated GitHub CLI is
+available. If `gh` is unavailable, do not stop immediately and do not install
+it automatically. Use an available authenticated GitHub connector or the
+GitHub REST API. For the REST fallback, obtain existing HTTPS credentials with
+`git credential fill`, keep the username and token only in shell variables,
+and send the request to `/repos/{owner}/{repo}/pulls`. Never print, log, write,
+or include credentials in command output, files, commits, or pull-request
+content. Set `GIT_TERMINAL_PROMPT=0` so the fallback cannot hang on an
+interactive credential prompt.
+
+After creation or update, verify the pull request's number, URL, open state,
+base branch, and head branch through GitHub before reporting success. If no
+authenticated GitHub mechanism is available, report the exact blocker and
+provide the repository's compare URL; do not claim that a pull request was
+created.
+
 The configured `workflow_base_branch` in `repos.yaml` is authoritative and is `main` for every application repository. All work enters `main` through short-lived branches and pull requests; do not infer that similarly named branches across repositories share commits or lifecycle. See `docs/git-workflow.md`.
 
 If a working tree is dirty, show the changed and untracked files, determine which belong to the task, and preserve them. Never use `git reset --hard`, `git clean -fd`, automatic stash, force-push, or history rewriting. Stage precise paths or patches instead of broad `git add .` or `git add -A` when unrelated changes exist.
