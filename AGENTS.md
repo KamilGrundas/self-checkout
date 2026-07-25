@@ -46,12 +46,21 @@ When asked to implement a feature or fix:
    for health checks, and verify browser-facing connectivity; never leave
    `compose.validation.yml` active after validation.
 8. Review every repository diff, untracked file, and possible secret.
-9. Create separate, atomic Conventional Commits in each repository.
-10. Prepare a separate PR summary and merge/deployment order for each repository.
-11. Stop before push unless the user explicitly instructs otherwise.
-12. Never merge, publish a release, or deploy to prod without explicit approval.
+9. Leave changes uncommitted for user review by default.
+10. Create separate, atomic Conventional Commits only when the user's prompt
+    explicitly requests commits.
+11. Create or update pull requests only when the user's prompt explicitly
+    requests pull requests.
+12. When commits or pull requests are requested, prepare a separate PR summary
+    and merge/deployment order for each repository.
+13. Never merge, publish a release, or deploy to prod without explicit approval.
 
 Use branch names `feat/…`, `fix/…`, `refactor/…`, `chore/…`, `docs/…`, `test/…`, `ci/…`, `security/…`, or `hotfix/…`. Commit messages must use the English Conventional Commit form `<type>(<scope>): <imperative description>`. Use `ops/check-commits.sh` before committing and `ops/finish-task.sh` before requesting a push.
+
+Commits and pull requests are opt-in actions. Do not infer permission to create
+them from a request to implement, fix, validate, or deploy changes to `dev`.
+Only create commits or pull requests when the current user prompt explicitly
+asks for them.
 
 The configured `workflow_base_branch` in `repos.yaml` is authoritative and is `main` for every application repository. All work enters `main` through short-lived branches and pull requests; do not infer that similarly named branches across repositories share commits or lifecycle. See `docs/git-workflow.md`.
 
