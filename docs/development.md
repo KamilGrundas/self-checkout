@@ -45,9 +45,10 @@ checks. Keep a dedicated development checkout-counter record named
 rotate it when missing or invalid. After an affected change, the normal `dev`
 runtime and the optional target client must work together before handoff.
 
-Standard dev startup includes admin, backend, ML API, PostgreSQL, MLflow, Label
-Studio, and the development mail catcher. The validation runner also attaches
-the isolated S3 contract-test overlay and exercises custom endpoint/path-style
-CRUD without removing external state. Normal dev startup instead uses the
-configured external endpoint or an explicitly selected provider overlay. See
+Standard dev startup includes admin, backend, ML API, dedicated training and
+scale-autolabel RQ workers, Redis, PostgreSQL, MLflow, Label Studio, and the
+development mail catcher. The validation runner also attaches the isolated S3
+contract-test overlay and exercises custom endpoint/path-style CRUD without
+removing external state. Normal dev startup instead uses the configured
+external endpoint or an explicitly selected provider overlay. See
 `environments.md`, `object-storage.md`, and `data-refresh.md`.
