@@ -28,14 +28,25 @@ flowchart LR
   B --> P[(Compose PostgreSQL)]
   B --> S[S3-compatible endpoint]
   M[ML service] --> S
+  M --> R[(Redis/RQ)]
+  R --> T[Training worker]
+  R --> V[Scale autolabel worker]
+  V --> L[Local VLM endpoint]
   M -. optional .-> F[Compose or external MLflow]
   F --> S
 ```
 
 Compose starts application services and local PostgreSQL. MLflow and Label
-Studio are optional overlays. S3 is either an external endpoint or a provider
-attached through a replaceable overlay. Named volumes contain only dev state
-and may be rebuilt.
+Studio are optional overlays. Redis provides durable, independent queues for
+classifier training and sequential scale-image autolabeling. S3 is either an
+external endpoint or a provider attached through a replaceable overlay. Named
+volumes contain only dev state and may be rebuilt.
+
+The native client reports its camera inventory to the backend. Counter settings
+are managed in admin and snapshotted into each checkout session. ML reads the
+superuser-managed VLM endpoint and full product catalog from backend when a
+scale-autolabel batch is created; durable results are stored as fingerprinted
+sidecars in S3-compatible storage.
 
 The optional `dev-client` computer runs the desktop client natively in its
 inspected runtime environment. It consumes development APIs from `dev` but
