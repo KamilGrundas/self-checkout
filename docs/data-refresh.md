@@ -6,14 +6,12 @@ Data refresh is strictly `PROD → DEV`.
 flowchart LR
   PP[(Prod PostgreSQL read-only)] --> DP[(Dev PostgreSQL)]
   PS[Prod S3 List/Get only] --> DS[Dev S3]
-  PM[MLflow metadata + artifacts] --> DM[Dev MLflow configuration]
   D[Independent dev credentials] --> DP
   D --> DS
-  D --> DM
 ```
 
 `self-checkout-infra/ops/data-refresh/prod-to-dev.sh` accepts `--dry-run`,
-`--postgres`, `--s3`, `--mlflow`, `--all`, `--verify-only`,
+`--postgres`, `--s3`, `--all`, `--verify-only`,
 `--snapshot-dev`, and the dev-only `--replace-dev`. It has no reverse,
 push-to-production, or arbitrary source/destination mode.
 
@@ -27,20 +25,13 @@ requires `ODTWÓRZ DEV DB <database>`; full S3 replacement requires
 The PostgreSQL source role needs connect and dump/read privileges only, without
 write, DDL, role, extension, or administrative rights. Source S3 credentials
 need `ListBucket` and `GetObject` (optionally version reads) and no put, delete,
-bucket, or policy rights. MLflow source access is read-only where its API
-supports it.
+bucket, or policy rights.
 
 Domain data is copied unchanged and needs no anonymization because the system
 does not store personal or privacy-regulated data. Infrastructure credentials,
 tokens, SSH keys, environment files, private certificates, policies, and
 production system configuration are never application data and are excluded.
 Dev supplies its own credentials.
-
-MLflow is not copied as an opaque directory. Metadata is restored with its
-PostgreSQL backend and artifacts through S3, then production URIs are replaced
-by dev configuration. The safe supported minimum requires both relationships to
-be declared; installations with a different backend need an explicit reviewed
-procedure before refresh.
 
 The current S3 refresh preserves object keys and bodies and verifies a content
 sample without relying on ETag. It does not reproduce bucket policies, ACLs,
@@ -54,4 +45,4 @@ are removed on exit. Requested dev snapshots, secret-free operation logs, and
 S3 manifests are retained in protected `refresh-snapshots`, `refresh-logs`, and
 `refresh-manifests` directories; operators remove them under the environment
 retention policy. Run the S3 stage once per approved source/target bucket pair,
-including the MLflow artifact bucket when selected.
+including the buckets containing native datasets and model artifacts when selected.

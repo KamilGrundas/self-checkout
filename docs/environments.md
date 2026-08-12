@@ -9,16 +9,15 @@ configuration and is never a source or Docker deployment target.
 
 Dev uses `compose.yml` plus `compose.override.yml`. It includes local
 PostgreSQL, application containers, local volumes, migrations, health checks,
-Redis with separate training/autolabel workers, MLflow, Label Studio, the
-development mail catcher, and either an external S3 endpoint or a separately
-chosen provider overlay. Standard dev scripts include `compose.mlflow.yml`.
+Redis with separate training/autolabel workers, the development mail catcher,
+and either an external S3 endpoint or a separately chosen provider overlay.
 `compose.s3-provider.example.yml` documents the stable DNS/port contract without
 selecting a product. `compose.s3-contract-test.yml` is isolated automated-test
 tooling, not an architectural provider.
 
 Production uses `compose.yml` plus `compose.prod.yml`. It requires external
 `DATABASE_URL` and S3 settings, disables bucket creation, has no local database,
-S3 server, MLflow server, or stateful-infrastructure volume, and has no
+S3 server or stateful-infrastructure volume, and has no
 `depends_on` relationship to dev-only services.
 
 Canonical database settings are `DATABASE_URL`, `DB_CONNECT_TIMEOUT`,
@@ -29,7 +28,8 @@ Canonical database settings are `DATABASE_URL`, `DB_CONNECT_TIMEOUT`,
 `S3_CREATE_BUCKETS`, and `S3_PUBLIC_BASE_URL`. The backend additionally requires
 `BACKEND_PUBLIC_URL` for browser-accessible product images. ML adds
 `S3_SHELF_BUCKET`, `S3_SCALE_BUCKET`, `S3_EXTERNAL_BUCKET`,
-`S3_TRAINING_BUCKET`, and `S3_LABEL_STUDIO_EXPORT_BUCKET`.
+and `S3_TRAINING_BUCKET`. Labeled images, datasets, model artifacts, metrics,
+and active-version pointers are stored through this generic contract.
 The admin image compiles browser-accessible `VITE_API_URL` and
 `VITE_ML_API_URL`; Compose-only service names must not be used for a LAN-facing
 build.
@@ -39,12 +39,6 @@ training and scale autolabeling. The queues have separate workers; the
 `scale-autolabel` worker has concurrency one for the local VLM. The VLM URL and
 timeouts are not environment variables: a superuser stores them in the backend
 system-settings singleton, and ML snapshots them when creating a batch.
-
-MLflow separates `MLFLOW_TRACKING_URI`, `MLFLOW_BACKEND_STORE_URI`, and
-`MLFLOW_ARTIFACT_ROOT`. Tracking is optional for API health and storage-only ML
-work, but training, registry operations, and model loading require a reachable
-tracking server. Dev starts the local tracking server by default; production
-may use an external server or omit MLflow when the scenario does not need it.
 
 Only local development receives safe endpoint/bucket/database defaults.
 Production validates required external values at Compose interpolation and
