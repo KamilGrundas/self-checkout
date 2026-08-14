@@ -32,12 +32,11 @@ flowchart LR
   R --> T[Training worker]
   R --> V[Scale autolabel worker]
   V --> L[Local VLM endpoint]
-  M -. optional .-> F[Compose or external MLflow]
-  F --> S
+  M --> O[Native labels, datasets and model registry]
+  O --> S
 ```
 
-Compose starts application services and local PostgreSQL. MLflow and Label
-Studio are optional overlays. Redis provides durable, independent queues for
+Compose starts application services and local PostgreSQL. Redis provides durable, independent queues for
 classifier training and sequential scale-image autolabeling. S3 is either an
 external endpoint or a provider attached through a replaceable overlay. Named
 volumes contain only dev state and may be rebuilt.
@@ -59,11 +58,8 @@ target is absent.
 flowchart LR
   A[Application containers] --> P[(External PostgreSQL)]
   A --> S[External S3-compatible endpoint]
-  A -. optional .-> F[External MLflow]
-  F --> P
-  F --> S
 ```
 
-Production Compose contains application containers only. PostgreSQL, S3, and
-optional MLflow are external dependencies supplied through configuration; no
+Production Compose contains application containers only. PostgreSQL and S3 are
+external dependencies supplied through configuration; no
 application Compose dependency or local stateful volume is required.

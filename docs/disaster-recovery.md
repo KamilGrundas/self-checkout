@@ -8,8 +8,8 @@ It never invokes a system-wide or volume-wide prune.
 
 Recovery order is: verify target, snapshot if requested, stop applications,
 remove selected dev resources, recreate Compose services, restore PostgreSQL,
-run current migrations, synchronize S3, restore MLflow relationships if
-selected, start applications, verify integrity, run health checks, and retain a
+run current migrations, synchronize S3, start applications, verify native
+dataset/model metadata, run health checks, and retain a
 secret-free report.
 
 Production recovery and deployment are separate approved infrastructure

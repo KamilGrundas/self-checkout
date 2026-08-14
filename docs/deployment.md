@@ -13,7 +13,6 @@ Until such an infra-owned procedure exists and is reviewed, use `ops/prod-status
 
 Production topology is `compose.yml` plus `compose.prod.yml`: application
 containers receive an external `DATABASE_URL`, S3-compatible endpoint and
-buckets, and an optional external `MLFLOW_TRACKING_URI`. It does not start or
-own PostgreSQL, object storage, or MLflow. The pre-1.0 policy permits breaking
+buckets. It does not start or own PostgreSQL or object storage. The pre-1.0 policy permits breaking
 development changes but never authorizes production data modification,
 uncommitted deployment, or an untested release.

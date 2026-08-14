@@ -36,7 +36,7 @@ Never install Codex on `dev`, `prod`, or `dev-client`. Do not introduce Docker
 on `dev-client` unless read-only inspection proves that the established client
 workflow intentionally uses it there.
 
-Compose files are `self-checkout-infra/compose.yml`, `compose.override.yml`, and optionally `compose.mlflow.yml`. Preserve their sibling build-context layout.
+Compose files are `self-checkout-infra/compose.yml`, `compose.override.yml`, and provider/test overlays documented by infra. Preserve their sibling build-context layout.
 
 After syncing or validating changes on `dev`, always rebuild and recreate the
 affected services with the latest synchronized sources before handing the task
@@ -235,7 +235,7 @@ changes.
 
 Stateful production services are external dependencies. Production application
 containers connect to external PostgreSQL, S3-compatible object storage, and
-optional MLflow through configuration.
+the ML model artifacts and metadata stored through the generic S3 contract.
 
 Development runs application services and required development infrastructure
 through Docker Compose. S3 connectivity must support an external endpoint and
