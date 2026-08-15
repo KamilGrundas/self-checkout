@@ -34,11 +34,22 @@ The admin image compiles browser-accessible `VITE_API_URL` and
 `VITE_ML_API_URL`; Compose-only service names must not be used for a LAN-facing
 build.
 
+Normal development uses `https://dev.admin.teik.pl` for the admin UI,
+`https://dev.api.teik.pl` for the backend, `https://dev.ml.teik.pl` for ML, and
+`https://dev.s3-api.teik.pl` for the browser-facing S3-compatible API. These
+origins are independent configuration values rather than ports derived from a
+single host. `https://dev.s3.teik.pl` is the provider console and is not an S3
+API endpoint.
+
 `TRAINING_QUEUE_URL` is the generic Redis connection used by classifier
 training and scale autolabeling. The queues have separate workers; the
 `scale-autolabel` worker has concurrency one for the local VLM. The VLM URL and
 timeouts are not environment variables: a superuser stores them in the backend
 system-settings singleton, and ML snapshots them when creating a batch.
+The canonical DEV value is `https://ai.teik.pl/v1/files/inference`.
+`compose.override.yml` provides the DEV-only hostname mapping and Caddy root CA
+needed by ML containers; production must supply its own routable endpoint and
+trust policy.
 
 Only local development receives safe endpoint/bucket/database defaults.
 Production validates required external values at Compose interpolation and
@@ -49,7 +60,8 @@ The target client reads `DEFAULT_LANG`, `APP_ENV`, `API_BASE_URL`,
 `ML_API_BASE_URL`, `CHECKOUT_COUNTER_ID`, `CHECKOUT_COUNTER_PASSWORD`, and
 `CLIENT_ID_STORAGE_PATH` from its device-owned `.env` or process environment.
 Synchronization must not overwrite that file. Both API endpoints must resolve
-to services running on `dev`, directly or through a controlled
-development-only route; they must never resolve to `prod` or application
-services hosted by `dev-client`. Validation must fail visibly when no route to
-`dev` exists. See [dev-client.md](dev-client.md).
+to the canonical development HTTPS routes, never to `prod`, raw published
+Compose ports, or application services hosted by `dev-client`. Native HTTPS and
+WSS use the operating-system trust store, which must trust the Caddy
+development CA. Validation must fail visibly when the route or certificate
+trust is unavailable. See [dev-client.md](dev-client.md).

@@ -138,6 +138,13 @@ on `dev`. Never use loopback services on `dev-client`, the control computer as
 an application backend, or any production endpoint. Treat failed connectivity
 to `dev` as a real target validation failure.
 
+The normal development values are `API_BASE_URL=https://dev.api.teik.pl` and
+`ML_API_BASE_URL=https://dev.ml.teik.pl`. Native HTTPS and WSS clients use the
+operating-system trust store, so the target must trust the Caddy development
+CA. Do not disable certificate verification, add application-specific trust
+fallbacks, or replace the canonical URLs with a raw DEV address and published
+Compose ports.
+
 The backend on `dev` and a reachable `dev-client` must be configured together.
 Before target validation, verify that the development backend contains a
 dedicated checkout-counter authorization for the target (use the stable name
