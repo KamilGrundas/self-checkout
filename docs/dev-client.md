@@ -94,9 +94,16 @@ Non-secret overrides are:
 ## Development API invariant
 
 The client process on `dev-client` always uses the backend and ML API running
-on `dev`. Device-owned `API_BASE_URL` and `ML_API_BASE_URL` may use a direct
-address, private DNS name, VPN address, or a controlled development-only relay,
-but their traffic must terminate at the corresponding services on `dev`.
+on `dev`. Device-owned configuration uses these canonical routes:
+
+```env
+API_BASE_URL=https://dev.api.teik.pl
+ML_API_BASE_URL=https://dev.ml.teik.pl
+```
+
+HTTPS and WSS use the operating-system trust store. The target must trust the
+Caddy development CA before deployment; never disable TLS verification or add
+an application-private compatibility fallback.
 
 Do not use application services hosted on `dev-client`, the control computer as
 an application backend, or any production endpoint. Validate both health
@@ -104,10 +111,10 @@ endpoints from `dev-client` before declaring device validation successful. A
 missing route is a real target configuration failure after reachability has
 been established.
 
-Prefer a reachable private LAN address over a public address or
-overlay-network address. If routing requires a controlled relay, bind its
-target-facing side to the private LAN and record the route type—never
-credentials—in the device profile.
+The canonical hostnames must terminate at the corresponding services on `dev`.
+Do not substitute raw LAN, overlay-network, or published Compose addresses in
+normal runtime configuration. Record non-secret route facts, never
+credentials, in the device profile.
 
 The backend on `dev` must also contain a dedicated checkout-counter
 authorization for this target. Use `dev-client` as its stable name unless the
