@@ -22,8 +22,11 @@ done
 printf '%-10s %-24s %-24s %-12s %-6s %-16s %-12s %-13s %s\n' NAME PATH BRANCH SHA STATE OPERATION REMOTE AHEAD/BEHIND LAST_COMMIT
 git_repo_records | while IFS=$'\t' read -r key name path; do
   case " $REQUESTED " in *" $key "*) ;; *) [ -z "$REQUESTED" ] || continue ;; esac
-  repo="$WORKSPACE_ROOT/$path"
-  [ -d "$repo/.git" ] || die "$path is not a Git repository"
+  repo="$(git_repo_absolute_path "$key")"
+  if [ ! -d "$repo/.git" ]; then
+    printf "%-10s %-24s MISSING (not cloned)\n" "$key" "$path"
+    continue
+  fi
   branch="$(git -C "$repo" branch --show-current)"
   [ -n "$branch" ] || branch='(detached)'
   sha="$(git -C "$repo" rev-parse --short=12 HEAD 2>/dev/null || printf '(unborn)')"

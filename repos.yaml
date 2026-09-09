@@ -3,45 +3,35 @@ workspace:
   path: .
   provider: null
   default_branch: main
-  workflow_base_branch: main
-  dev_ssh_alias: dev
-  prod_ssh_alias: prod
-  # Dedicated sibling-repository workspace verified through ops/context.sh.
-  dev_root: /home/kamil/self-checkout-workspace
 
 repositories:
   admin:
     name: self-checkout-admin
-    path: self-checkout-admin
+    checkout_directory: self-checkout-admin
     provider: github
     remote: git@github.com:KamilGrundas/self-checkout-admin.git
     default_branch: main
-    workflow_base_branch: main
   backend:
     name: self-checkout-backend
-    path: self-checkout-backend
+    checkout_directory: self-checkout-backend
     provider: github
     remote: git@github.com:KamilGrundas/self-checkout-backend.git
     default_branch: main
-    workflow_base_branch: main
   client:
     name: self-checkout-client
-    path: self-checkout-client
+    checkout_directory: self-checkout-client
     provider: github
     remote: git@github.com:KamilGrundas/self-checkout-client.git
     default_branch: main
-    workflow_base_branch: main
   infra:
     name: self-checkout-infra
-    path: self-checkout-infra
+    checkout_directory: self-checkout-infra
     provider: github
     remote: git@github.com:KamilGrundas/self-checkout-infra.git
     default_branch: main
-    workflow_base_branch: main
   ml:
     name: self-checkout-ml
-    path: self-checkout-ml
+    checkout_directory: self-checkout-ml
     provider: github
     remote: git@github.com:KamilGrundas/self-checkout-ml.git
     default_branch: main
-    workflow_base_branch: main

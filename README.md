@@ -1,33 +1,43 @@
-# Self-checkout control workspace
+# Self-checkout workspace
 
-This thin repository coordinates five sibling, independent Git repositories. Their directories are intentionally ignored by the parent repository and are not submodules.
+This repository is the portable integration workspace for the independent
+component repositories recorded in [repos.yaml](repos.yaml): admin, backend,
+client, infrastructure, and ML. It describes service contracts, Compose
+integration, development workflow, and repository inventory. It does not
+prescribe a host, container runtime, proxy, identity provider, VLM provider, or
+network topology.
 
-Start with:
+The workspace root contains versioned instructions, scripts, documentation,
+tests, and inventory only. Environment directories, checkout placement,
+runtime state, and secrets are local operator concerns and remain outside this
+repository's contract. Component repositories remain independent repositories,
+not submodules.
+
+## Portable workflow
+
+Run review helpers from the workspace root after supplying the local directory
+that contains component checkouts (the directory itself is operator
+configuration, not workspace state):
 
 ```bash
-./ops/context.sh
-./ops/repos-status.sh
-./ops/git-setup.sh --dry-run --all
-./ops/dev-sync.sh --dry-run
-./ops/dev-client-check.sh --optional
+SELF_CHECKOUT_COMPONENTS_DIR=/path/to/component-checkouts \
+  ./ops/repos-status.sh --no-remote-check
 ```
 
-After `context.sh` verifies the remote dev host, set `workspace.dev_root` in `repos.yaml` to the dedicated absolute workspace path reported or provisioned on dev. Synchronization defaults to dry-run and never targets prod.
+Work is prepared on `main`. Review the concrete diff and validation evidence
+before requesting approval. Commits and publication require separate explicit
+approval; the helpers never commit, push, create branches, or deploy.
 
-Start a future task with independent branches:
+Compose definitions use the standard Compose Specification and are intended to
+work with `docker compose` and `podman compose`. Browser-facing configuration
+uses local operator values; versioned examples use `localhost`, `127.0.0.1`, or
+neutral placeholders. PostgreSQL and Redis are internal services and must not
+be published to the host.
 
-```bash
-./ops/start-task.sh \
-  --type feat \
-  --name SC-123-payment-flow \
-  --repos backend,client,infra
-```
+The autolabel workflow uses a replaceable OpenAI-compatible VLM inference
+provider. The chosen provider, endpoint, credentials, and host routing are
+local infrastructure decisions, outside this repository.
 
-Finish with `./ops/finish-task.sh --repos backend,client,infra`. It validates and reviews each repository separately and never pushes or merges.
-
-`dev-client` is an optional, replaceable target computer for native Rust/Iced
-client testing. Its absence never blocks local client development. See
-`docs/dev-client.md` for controlled synchronization, build, restart, and
-verification.
-
-See `CONTRIBUTING.md`, `docs/git-workflow.md`, `docs/releases.md`, `docs/architecture.md`, `docs/development.md`, `docs/deployment.md`, and `docs/rollback.md` before changing system-wide behavior.
+See [AGENTS.md](AGENTS.md), [architecture](docs/architecture.md),
+[environments](docs/environments.md), [development](docs/development.md), and
+[Git workflow](docs/git-workflow.md).

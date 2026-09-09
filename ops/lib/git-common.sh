@@ -37,6 +37,17 @@ repository_field() {
   key="$1"
   field="$2"
   validate_git_repo_key "$key"
+  if [ "$key" = workspace ]; then
+    awk -v field="$field" '
+      /^workspace:/ { inside=1; next }
+      /^repositories:/ { inside=0 }
+      inside && $0 ~ "^  " field ":" {
+        value=$0; sub("^  " field ":[[:space:]]*", "", value)
+        gsub(/^"|"$/, "", value); if (value != "null") print value; exit
+      }
+    ' "$REPOS_FILE"
+    return
+  fi
   awk -v wanted="$key" -v field="$field" '
     $0 == "  " wanted ":" { in_repo=1; next }
     in_repo && /^  [a-zA-Z0-9_-]+:$/ { exit }
@@ -51,7 +62,7 @@ repository_field() {
 }
 
 configured_base_branch() {
-  repository_field "$1" workflow_base_branch
+  configured_default_branch "$1"
 }
 
 configured_default_branch() {
@@ -59,11 +70,13 @@ configured_default_branch() {
 }
 
 git_repo_absolute_path() {
-  path="$(git_repo_path_for "$1")"
-  if [ "$path" = . ]; then
+  checkout_directory="$(git_repo_path_for "$1")"
+  if [ "$checkout_directory" = . ]; then
     printf '%s\n' "$WORKSPACE_ROOT"
   else
-    printf '%s/%s\n' "$WORKSPACE_ROOT" "$path"
+    [ -n "${SELF_CHECKOUT_COMPONENTS_DIR:-}" ] \
+      || die 'Set SELF_CHECKOUT_COMPONENTS_DIR to the local component checkout directory'
+    printf '%s/%s\n' "$SELF_CHECKOUT_COMPONENTS_DIR" "$checkout_directory"
   fi
 }
 

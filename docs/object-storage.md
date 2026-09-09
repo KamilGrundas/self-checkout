@@ -1,26 +1,12 @@
-# S3-compatible object storage
+# Object storage
 
-No permanent object-storage provider is selected. Backend and ML use boto3
-against the practical S3 subset they currently need: `HeadBucket`,
-`CreateBucket` when explicitly enabled on dev, `ListObjectsV2`, `PutObject`,
-`GetObject`, `DeleteObjects`, and `HeadObject`. Content type and user metadata
-are preserved. boto3 supplies multipart upload for larger transfers where its
-managed transfer API is used; the current request paths otherwise upload bounded
-image and dataset objects. The applications do not currently require presigned
-URLs.
+Application code uses a provider-neutral S3-compatible contract. Configuration
+includes endpoint, region, bucket names, credentials, TLS verification,
+addressing style, timeouts, retries, and an optional browser-facing delivery
+base URL. No component depends on a provider console, proprietary SDK, or
+provider-specific hostname.
 
-Set `S3_FORCE_PATH_STYLE=true` for implementations that require path addressing.
-Set a custom endpoint when the provider is not the default public S3 service.
-TLS use and verification, region, retry count, connection/read timeouts, and
-temporary session credentials are independent settings. ETag is never assumed
-to be a content hash because multipart behavior differs. IAM extensions,
-versioning, replication, provider administration, and vendor APIs are outside
-the application contract.
-
-Bucket creation is allowed only for local development with
-`S3_CREATE_BUCKETS=true`. Production buckets, policies, identities, encryption,
-and lifecycle rules are provisioned externally. Product images are delivered
-through the backend URL configured by `BACKEND_PUBLIC_URL`, so browsers do not
-need access to an internal S3 endpoint. ML may use `S3_PUBLIC_BASE_URL` where it
-needs to publish provider-neutral object URLs. The applications do not make
-buckets public.
+Development bucket creation may be explicitly enabled for isolated development
+state. Production buckets, policies, lifecycle rules, and credentials are
+operator-managed external dependencies. Product image URLs are delivered by the
+backend's configured public URL, never an internal object-store DNS name.

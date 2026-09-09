@@ -1,65 +1,27 @@
 # Architecture
 
-The parent repository is a control workspace for five independent Git
-repositories. Application code remains owned by backend, admin, client, ML, and
-infra repositories with independent branches, commits, PRs, and releases.
+The workspace coordinates five independent repositories: admin, backend, client,
+infra, and ML. Each owns its own source, tests, and history. The workspace
+describes how current component revisions integrate; component changes are
+committed separately after direct approval.
 
-The project is pre-1.0. Earlier unreleased component versions are not
-compatibility targets; the current repositories must form one coherent,
-validated system. Breaking changes are coordinated across affected
-repositories. This policy will be replaced before the first intentional
-production release by explicit stability, compatibility, versioning, migration,
-and supported-upgrade rules.
-
-Object storage is a provider-neutral S3-compatible contract. Application code
-uses standard bucket availability/creation (dev-only when enabled), list, put,
-get, delete, metadata, content-type, and multipart behavior supplied by the S3
-SDK. It does not manage provider users, consoles, replication, log formats,
-versioning extensions, or bucket policies. Endpoint, region, credentials,
-session token, TLS verification, addressing style, timeouts, and retry behavior
-are configuration. No permanent S3 provider is selected.
-
-## Development
+The application uses generic contracts: PostgreSQL, Redis/RQ where selected,
+S3-compatible object storage, OpenID Connect when enabled, and a replaceable
+OpenAI-compatible VLM inference provider. Concrete products, endpoints,
+credentials, and network routing are environment configuration.
 
 ```mermaid
 flowchart LR
-  C[Local or optional target client] --> B[Backend on dev]
+  C[Native client] --> B[Backend]
   A[Admin] --> B
-  B --> P[(Compose PostgreSQL)]
-  B --> S[S3-compatible endpoint]
+  B --> P[(PostgreSQL)]
+  B --> S[S3-compatible storage]
   M[ML service] --> S
   M --> R[(Redis/RQ)]
   R --> T[Training worker]
-  R --> V[Scale autolabel worker]
-  V --> L[Local VLM endpoint]
-  M --> O[Native labels, datasets and model registry]
-  O --> S
+  R --> V[Autolabel worker]
+  V --> I[OpenAI-compatible vision inference provider]
 ```
 
-Compose starts application services and local PostgreSQL. Redis provides durable, independent queues for
-classifier training and sequential scale-image autolabeling. S3 is either an
-external endpoint or a provider attached through a replaceable overlay. Named
-volumes contain only dev state and may be rebuilt.
-
-The native client reports its camera inventory to the backend. Counter settings
-are managed in admin and snapshotted into each checkout session. ML reads the
-superuser-managed VLM endpoint and full product catalog from backend when a
-scale-autolabel batch is created; durable results are stored as fingerprinted
-sidecars in S3-compatible storage.
-
-The optional `dev-client` computer runs the desktop client natively in its
-inspected runtime environment. It consumes development APIs from `dev` but
-does not host Compose services. Local desktop builds remain supported when the
-target is absent.
-
-## Production
-
-```mermaid
-flowchart LR
-  A[Application containers] --> P[(External PostgreSQL)]
-  A --> S[External S3-compatible endpoint]
-```
-
-Production Compose contains application containers only. PostgreSQL and S3 are
-external dependencies supplied through configuration; no
-application Compose dependency or local stateful volume is required.
+Stateful-service placement and environment isolation are local operator
+decisions. The portable contracts do not assume a host, topology, or provider.

@@ -1,18 +1,10 @@
-# Development reset and recovery
+# Disaster recovery
 
-`self-checkout-infra/ops/reset-dev.sh` validates the independent dev marker,
-prints a plan, optionally snapshots the dev database, stops applications,
-removes only explicitly allowlisted volumes whose Compose project label
-matches, recreates the stack, and leaves imports to the one-way refresh tool.
-It never invokes a system-wide or volume-wide prune.
+Recovery procedures are environment-specific and must be maintained by the
+operator with the relevant backup and restore evidence. This portable workspace
+does not contain production credentials, storage locations, or host commands.
 
-Recovery order is: verify target, snapshot if requested, stop applications,
-remove selected dev resources, recreate Compose services, restore PostgreSQL,
-run current migrations, synchronize S3, start applications, verify native
-dataset/model metadata, run health checks, and retain a
-secret-free report.
-
-Production recovery and deployment are separate approved infrastructure
-procedures. Development reset tooling has no production target, cannot reverse
-the refresh direction, and must never be used as a production disaster-recovery
-mechanism.
+Before production use, document tested restoration of database data,
+S3-compatible objects, application configuration, and required image versions.
+A backup file alone is not evidence that restoration works. Recovery work never
+authorizes destructive operations in another environment.

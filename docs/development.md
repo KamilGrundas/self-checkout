@@ -1,54 +1,22 @@
 # Development
 
-Run all workspace scripts from the parent directory. `ops/repos-status.sh` reports live branch, SHA, remote, dirty state, and upstream ahead/behind counts for every child repository.
-
-Bootstrap safe repository-local Git defaults and shared hooks with:
-
-```bash
-./ops/git-setup.sh --dry-run --all
-./ops/git-setup.sh --apply --all
-```
-
-The bootstrap never changes global Git configuration, author identity, signing, credentials, or proxy settings. It preserves effective values already configured by the user. It intentionally avoids `fetch.pruneTags` because published tags are immutable and avoids `rebase.autoStash` because workspace automation must not stash user changes.
-
-Create new work with `ops/start-task.sh`. The script fetches selected remotes, refuses dirty or in-progress repositories, resolves `main` as the configured base from `repos.yaml`, preflights every selected repository, and creates the same logical branch independently. Use `--dry-run` to preview. It never touches unselected repositories.
-
-Use `ops/check-commits.sh --message 'fix(client): prevent duplicate payment'` or `--repo <key> --range <range>` to validate Conventional Commits. `ops/finish-task.sh --repos <keys>` runs remote dev validation, reviews diffs and untracked files, validates new commit messages, suggests commit groups, and prints PR summary skeletons. Its `--dry-run` mode skips remote validation but still performs local review.
-
-Run `ops/context.sh` once to verify that `dev` resolves, `/etc/codex-environment` contains exactly `dev`, and to display safe workspace candidates. Set the selected absolute path in `repos.yaml` as `workspace.dev_root` (or temporarily export `SELF_CHECKOUT_DEV_ROOT`). Accepted paths must end in `/self-checkout` or `/self-checkout-workspace` and cannot be a broad system directory.
-
-Synchronization is dry-run by default:
+Begin at the workspace root, inspect the independent repositories, and read the
+applicable instructions before editing:
 
 ```bash
-./ops/dev-sync.sh
-./ops/dev-sync.sh --repo backend --dry-run
-./ops/dev-sync.sh --repo backend --apply
+./ops/repos-status.sh --no-remote-check
 ```
 
-For a new isolated dev workspace, `./ops/dev-init.sh` creates the required remote-only `self-checkout-infra/.env` from its example. It refuses to overwrite an existing file, uses mode `0600`, generates secret values on dev, and does not print them. Never copy a local `.env` into the remote workspace.
+Environment entrypoints and environment files are operator configuration. Do
+not add them to Git or duplicate their topology in workspace documentation.
 
-The optional `--delete-safe` flag uses delayed deletion only inside validated per-repository targets. It is never enabled by default. Git metadata, env files, credentials, caches, build outputs, dependencies, test reports, and infra data are excluded.
+Portable infrastructure targets the standard Compose Specification and supports
+both `docker compose` and `podman compose`. Before an authorized environment
+change, validate the exact local entrypoint with the selected Compose runtime's
+`config` command. Keep resolved output private because it can contain secrets.
+Then run relevant component tests and, after an authorized deployment, inspect
+service status, bounded logs, health checks, and application connectivity.
 
-Use `ops/dev-test.sh --repo <key>` for affected repositories. It synchronizes all required Compose build contexts, verifies the dev marker, delegates repository validation to the controlled infra runner, and checks Compose service status. Do not run local Docker commands.
-
-Client work also has an optional representative-hardware step on
-`dev-client`. Run local Rust checks first, then use
-`ops/dev-client-check.sh --optional`. When reachable, inspect, dry-run and apply
-the client-only sync, build/restart with `ops/dev-client-deploy.sh`, and verify
-with `ops/dev-client-status.sh`. When unavailable, report the device step as
-skipped and continue. See [dev-client.md](dev-client.md).
-
-When the target is reachable, readiness includes a successful authenticated
-checkout-session connection to the backend on `dev`, not only HTTP health
-checks. Keep a dedicated development checkout-counter record named
-`dev-client` (or the explicit name cached in the target profile), and create or
-rotate it when missing or invalid. After an affected change, the normal `dev`
-runtime and the optional target client must work together before handoff.
-
-Standard dev startup includes admin, backend, ML API, dedicated training and
-scale-autolabel RQ workers, Redis, PostgreSQL, and the
-development mail catcher. The validation runner also attaches the isolated S3
-contract-test overlay and exercises custom endpoint/path-style CRUD without
-removing external state. Normal dev startup instead uses the configured
-external endpoint or an explicitly selected provider overlay. See
-`environments.md`, `object-storage.md`, and `data-refresh.md`.
+Do not interpret a configuration check as a deployment or hardware validation.
+Native client validation, external identity integration, and VLM provider
+connectivity require their own environment-specific procedures.

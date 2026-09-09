@@ -1,8 +1,6 @@
-/self-checkout-admin/
-/self-checkout-backend/
-/self-checkout-client/
-/self-checkout-infra/
-/self-checkout-ml/
+# Local environments contain independent repositories and runtime state
+/dev/
+/prod/
 /.DS_Store
 /.claude/
 /.ruff_cache/
@@ -12,3 +10,27 @@
 .env
 .env.*
 !.env.example
+
+# Runtime state and secrets at every environment level
+secrets/
+credentials/
+data/
+mydata/
+volumes/
+backups/
+backup/
+*.key
+*.pem
+*.p12
+*.pfx
+*.sql
+*.sql.*
+*.dump
+*.tar
+*.tar.*
+*.tgz
+*.zip
+node_modules/
+target/
+.venv/
+__pycache__/

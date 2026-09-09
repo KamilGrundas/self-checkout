@@ -29,29 +29,19 @@ for key in $KEYS; do status_args="$status_args --repo $key"; done
 # shellcheck disable=SC2086
 "$SCRIPT_DIR/repos-status.sh" --no-remote-check $status_args
 
-validation_args=''
-for key in $KEYS; do
-  [ "$key" = workspace ] || validation_args="$validation_args --repo $key"
-done
-if [ "$DRY_RUN" = true ]; then
-  [ -z "$validation_args" ] || printf 'WOULD RUN: %s/dev-test.sh%s\n' "$SCRIPT_DIR" "$validation_args"
-else
-  if [ -n "$validation_args" ]; then
-    # shellcheck disable=SC2086
-    "$SCRIPT_DIR/dev-test.sh" $validation_args
-  fi
-fi
+printf 'Local review only: run relevant component tests separately and record results. No deployment validation is inferred.\n'
 
 for key in $KEYS; do
   repo="$(git_repo_absolute_path "$key")"
   printf '\n===== %s =====\n' "$key"
   git -C "$repo" diff --check
+  git -C "$repo" diff --cached --check
   printf '%s\n' '-- status'
   git -C "$repo" status --short
   printf '%s\n' '-- diff stat'
   git -C "$repo" diff --stat
   git -C "$repo" diff --cached --stat
-  if git -C "$repo" diff --no-ext-diff --unified=0 | grep -Eiq '^\+.*(-----BEGIN (RSA |EC |OPENSSH )?PRIVATE KEY-----|gh[pousr]_[A-Za-z0-9_]{20,}|AKIA[0-9A-Z]{16})'; then
+  if { git -C "$repo" diff --no-ext-diff --unified=0; git -C "$repo" diff --cached --no-ext-diff --unified=0; } | grep -Ei '^\+.*(-----BEGIN (RSA |EC |OPENSSH )?PRIVATE KEY-----|gh[pousr]_[A-Za-z0-9_]{20,}|AKIA[0-9A-Z]{16})' >/dev/null; then
     die "Potential secret detected in $key diff; inspect locally without printing it"
   fi
   base="$(configured_base_branch "$key")"
@@ -71,8 +61,8 @@ for key in $KEYS; do
       if (tooling) print "tooling/ci:" tooling
       if (docs) print "docs:" docs
     }'
-  printf '%s\n' '-- PR summary skeleton'
-  printf 'Purpose: [describe]\nValidation: [record exact checks]\nDependencies: [list repository PRs or none]\nRollback: [describe]\nMerge order: [position or independent]\n'
+  printf '%s\n' '-- direct approval summary'
+  printf 'Purpose: [describe]\nValidation: [record exact checks]\nDependencies: [list repositories/commits or none]\nRollback: [describe]\nCommit/push order: [position or independent]\n'
 done
 
 printf '\nNo push, PR creation, merge, release, or deployment was performed.\n'
