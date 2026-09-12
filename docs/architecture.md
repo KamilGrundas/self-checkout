@@ -6,7 +6,7 @@ describes how current component revisions integrate; component changes are
 committed separately after direct approval.
 
 The application uses generic contracts: PostgreSQL, Redis/RQ where selected,
-S3-compatible object storage, OpenID Connect when enabled, and a replaceable
+S3-compatible object storage, local JWT authentication, and a replaceable
 OpenAI-compatible VLM inference provider. Concrete products, endpoints,
 credentials, and network routing are environment configuration.
 
